@@ -4,8 +4,16 @@ from telepot.delegate import pave_event_space, per_chat_id, create_open
 import time
 import requests
 import random
+import os
 
 from conf import token, botName, userAgent, spamTime, subreddit
+
+with open("info.txt",'w') as info :
+    #Create a info.txt file with the process to kill to rebot the bot and a text to copy to botfather to set command
+    info.write("process id : " + str(os.getpid())+"\n")
+    inlineHelp = ["{} - send photo from r/{} to the group\n".format(tag,subreddit[tag]) for tag in subreddit]
+    info.writelines(inlineHelp)
+
 
 
 class PhotoSender(telepot.helper.ChatHandler):
