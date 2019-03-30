@@ -42,17 +42,19 @@ class PhotoSender(telepot.helper.ChatHandler):
                 return True
         return False
 
-    def sendReddit(self,tag ,chatId, msgId):
+    def sendReddit(self,sub ,chatId, msgId):
         """Va chercher plein d'url de photo sur reddit et en sélectionne 1 qu'il renvoie"""
-        res = requests.get('https://www.reddit.com/r/'+tag+'/hot/.json',
+        res = requests.get('https://www.reddit.com/r/'+sub+'/hot/.json',
                            headers={'User-Agent': userAgent},
                            params={'limit': 100})
         imgIndex = random.randint(0, 100)
-        url = res.json()["data"]["children"][imgIndex]['data']["url"]
+        allChildren = res.json()["data"]["children"]
+        url=allChildren[imgIndex]['data']["url"]
         while not (self.isImage(url)):
             imgIndex = random.randint(0, 100)
-            url = res.json()["data"]["children"][imgIndex]['data']["url"]
-        bot.sendPhoto(chatId, url, reply_to_message_id=msgId)
+            url = allChildren[imgIndex]['data']["url"]
+        sourceLink ="https://www.reddit.com/r/{}/comments/{}".format(sub,allChildren[imgIndex]['data']['id'])
+        bot.sendPhoto(chatId, url, caption='[link]({})'.format(sourceLink), parse_mode="Markdown", reply_to_message_id=msgId)
 
     def checkAndSend(self,msg):
         """Check if the tag is used as a command in the message and send the corresponding photo if it's the case.
