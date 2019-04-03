@@ -66,7 +66,7 @@ class PhotoSender(telepot.helper.ChatHandler):
             if '/{}'.format(tag) in text or '/{}@{}'.format(tag,botName) in text:
                 if chatType=='private' or not (self.dealAbuse(chatId, msgId)):
                     self.lastCall = time.time()
-                    self.sendReddit(subreddit[tag],chatId, msgId)
+                    self.sendReddit(random.choice(subreddit[tag]),chatId, msgId)
                     return True
         return False
 
