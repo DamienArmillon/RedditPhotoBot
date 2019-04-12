@@ -13,7 +13,7 @@ with open("info.txt",'w') as info :
     #Create a info.txt file with the process to kill to rebot the bot and a text to copy to botfather to set command
     info.write("process id : " + str(os.getpid())+"\n")
     inlineHelp = ["{} - send photo from r/{} to the group\n".format(tag,subreddit[tag]) for tag in subreddit]
-    inlineHelp += "/setcooldown n put an antispam decurity of n seconds"
+    inlineHelp += "setcooldown n put an antispam decurity of n seconds \n"
     info.writelines(inlineHelp)
 
 dao = DAO.Dao()
@@ -84,7 +84,7 @@ class PhotoSender(telepot.helper.ChatHandler):
             if '/help' in text or '/help@'+botName in text:
                 bot.sendMessage(chatId, "Hi I'm a super bot sending to you icredible reddit content")
                 return None
-            if '/setcooldown' in text or '/setcooldown'+botName in text:    #Change the cooldown if the admin of a group ask for it
+            if '/setcooldown' in text or '/setcooldown@'+botName in text:    #Change the cooldown if the admin of a group ask for it
                 if not('group' in chatType) :
                     bot.sendMessage(chatId,"Option réservée aux groupes",reply_to_message_id=msgId)
                     return None
@@ -95,7 +95,10 @@ class PhotoSender(telepot.helper.ChatHandler):
                         try :
                             cooldown = int(text[text.index("/setcooldown")+1])
                         except :
-                            cooldown = int(text[text.index("/setcooldown"+botName)+1])
+                            try :
+                                cooldown = int(text[text.index("/setcooldown"+botName)+1])
+                            except :
+                                bot.sendMessage(chatId,"Il faut spécifier un temps",reply_to_message_id=msgId)
                         try :
                             dao.setCooldown(chatId,cooldown)
                         except :
