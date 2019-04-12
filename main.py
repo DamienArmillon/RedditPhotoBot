@@ -5,6 +5,7 @@ import time
 import requests
 import random
 import os
+import DAO
 
 from conf import token, botName, userAgent, spamTime, subreddit
 
@@ -14,17 +15,20 @@ with open("info.txt",'w') as info :
     inlineHelp = ["{} - send photo from r/{} to the group\n".format(tag,subreddit[tag]) for tag in subreddit]
     info.writelines(inlineHelp)
 
-
+dao = DAO.Dao()
 
 class PhotoSender(telepot.helper.ChatHandler):
     def __init__(self, *args, **kwargs):
         super(PhotoSender, self).__init__(*args, **kwargs)
-        self.lastCall = -50.0
         self.isAbuse = False
 
     def dealAbuse(self, chatId, msgId):
-        """Si le bot a été appelé trop récement il n'enverra pas de photos"""
-        if time.time() - self.lastCall < spamTime:  # Le bot ne permet d'envoyer des images que toutes les 30s/chan
+        """Si le bot a été appelé trop récement il n'enverra pas de photos: Renvoie true si le cooldown n'est pas passé, false sinon"""
+        timeInfo = dao.getTimeInfo(chatId)
+        if timeInfo == None :
+            return False
+        spamTime, lastCall = timeInfo
+        if time.time() - lastCall < spamTime:
             if self.isAbuse:
                 bot.deleteMessage((chatId, msgId))
             else:
@@ -67,19 +71,42 @@ class PhotoSender(telepot.helper.ChatHandler):
                 if chatType=='private' or not (self.dealAbuse(chatId, msgId)):
                     self.lastCall = time.time()
                     self.sendReddit(random.choice(subreddit[tag]),chatId, msgId)
+                    dao.pushLastCall(chatId)
                     return True
         return False
 
-
     def on_chat_message(self, msg):
         contentType, chatType, chatId = telepot.glance(msg)
+        msgId =msg["message_id"]
         if contentType == 'text':
             text = msg['text'].split(' ')
-            # For All reddit chan, its all in one function
-            if self.checkAndSend(msg) :
-                return None
             if '/help' in text or '/help@'+botName in text:
                 bot.sendMessage(chatId, "Hi I'm a super bot sending to you icredible reddit content")
+                return None
+            if '/setcooldown' in text or '/setcooldown'+botName in text:    #Change the cooldown if the admin of a group ask for it
+                if not('group' in chatType) :
+                    bot.sendMessage(chatId,"Option réservée aux groupes",reply_to_message_id=msgId)
+                    return None
+                admins = bot.getChatAdministrators(chatId)
+                sender = msg['from']['id']
+                for admin in admins :
+                    if sender == admin['user']['id'] :
+                        try :
+                            cooldown = int(text[text.index("/setcooldown")+1])
+                        except :
+                            cooldown = int(text[text.index("/setcooldown"+botName)+1])
+                        try :
+                            dao.setCooldown(chatId,cooldown)
+                        except :
+                            bot.sendMessage(chatId,"Une erreur s'est produite", reply_to_message_id=msgId)
+                            dao.setCooldown(chatId, cooldown)
+                            return None
+                        bot.sendMessage(chatId,"Cooldown mis en place sur {} secondes".format(cooldown), reply_to_message_id=msgId)
+                        return None
+                bot.sendMessage(chatId,"Il faut être admin pour ça mon bichon",reply_to_message_id=msgId)
+                return None
+            # For All reddit chan, its all in one function
+            if self.checkAndSend(msg) :
                 return None
 
 
