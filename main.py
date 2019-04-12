@@ -13,6 +13,7 @@ with open("info.txt",'w') as info :
     #Create a info.txt file with the process to kill to rebot the bot and a text to copy to botfather to set command
     info.write("process id : " + str(os.getpid())+"\n")
     inlineHelp = ["{} - send photo from r/{} to the group\n".format(tag,subreddit[tag]) for tag in subreddit]
+    inlineHelp += "/setcooldown n put an antispam decurity of n seconds"
     info.writelines(inlineHelp)
 
 dao = DAO.Dao()
