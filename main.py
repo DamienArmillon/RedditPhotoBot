@@ -96,7 +96,7 @@ class PhotoSender(telepot.helper.ChatHandler):
                             cooldown = int(text[text.index("/setcooldown")+1])
                         except :
                             try :
-                                cooldown = int(text[text.index("/setcooldown"+botName)+1])
+                                cooldown = int(text[text.index("/setcooldown@"+botName)+1])
                             except :
                                 bot.sendMessage(chatId,"Il faut spécifier un temps",reply_to_message_id=msgId)
                         try :
