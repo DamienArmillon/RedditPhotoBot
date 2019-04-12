@@ -7,7 +7,7 @@ import random
 import os
 import DAO
 
-from conf import token, botName, userAgent, spamTime, subreddit
+from conf import token, botName, userAgent, subreddit
 
 with open("info.txt",'w') as info :
     #Create a info.txt file with the process to kill to rebot the bot and a text to copy to botfather to set command
